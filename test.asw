@@ -1,0 +1,6 @@
+JMP 4
+INC 1
+DEC 2
+ISZ 2
+JMP 2
+STP
