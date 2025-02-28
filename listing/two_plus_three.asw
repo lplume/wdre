@@ -1,0 +1,27 @@
+; Load the values in register 0
+; and move it to register 2 and 3
+START:		LD0 0x05
+			JMP TWO
+SECOND:		LD0 0x03
+			JMP THREE
+; sum 2 and 3
+BEGIN:		INC 3
+			DEC 2
+
+CHK:		ISZ 2
+			JMP BEGIN
+			STP
+			
+
+TWO:		DEC 0
+			INC 2
+			ISZ 0
+			JMP TWO
+			JMP SECOND
+
+THREE:		DEC 0
+			INC 3
+			ISZ 0
+			JMP THREE
+			JMP BEGIN
+		

@@ -11,77 +11,52 @@ for i = 1, #arg do
 	end	
 end
 
--- registers and memory init
-local nregisters 	= args['r'] or 8
-local nmemory 		= args['m'] or 21
+-- debug
+DEBUG = args['d'] or false
 
-local register = {}
-local memory = {}
-local pc = 1
-local state = 1
+-- memory init
+local nmemory = args['m'] or 256
+local nram = args['r'] or 256
 
-for i = 1, nregisters do
+register = {}
+memory = {}
+pc = 0
+state = true
+
+for i = 0, 3 do
 	register[i] = 0
 end
 
-for i = 1, nmemory do
+for i = 0, nmemory do
 	memory[i] = nil
 end
 
-register[1] = 3
-register[2] = 2
-
--- opcodes
-local oc = {
-	[0x00] = function() -- INC
-		local reg = memory[pc + 1]
-		register[reg] = register[reg] + 1
-		return 2
-	end,
-	[0x01] = function() -- DEC
-		local reg = memory[pc + 1]
-		register[reg] = register[reg] - 1
-		return 2
-	end,
-	[0x02] = function(reg) -- ISZ
-		local reg = memory[pc + 1]
-		local inc = 2
-		if register[reg] == 0 then
-			inc = 4
-		end
-		return inc
-	end,
-	[0x03] = function() -- JMP
-		local addr = memory[pc + 1]
-		return (pc - ((addr * 2) - 1)) * -1
-	end,
-	[0x04] = function() -- STP
-		state = false
-		return 0
-	end
-}
+local oc = require("src.opcodes")
 
 -- load rom into memory
 local rom = io.open(file, "rb"):read("*a")
 
 for i=1, #rom do
 	local ins = string.byte(rom, i)
-	table.insert(memory, ins)
+	memory[i - 1] = ins
 end
 
 -- eval loop
 while state do
 	ins = memory[pc]
 	local inc = 0
-	
-	if oc[ins] then
-		inc = oc[ins]()
+
+	local current = oc[ins]	
+	if current then
+		current.f()
+	else
+		os.exit()
 	end
 
-	pc = pc + inc
+	pc = pc + current.s
 end
 
 -- register dump
-for i=1, #register do
+for i=0, #register do
 	print(string.format("Register %d: %d", i, register[i]))
 end
